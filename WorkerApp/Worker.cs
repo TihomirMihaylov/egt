@@ -3,11 +3,18 @@ using System.Text;
 using RabbitMQ.Client.Events;
 using WorkerApp.Models;
 using WorkerApp.Repository;
+using StackExchange.Redis;
+using Newtonsoft.Json;
 
 namespace WorkerApp
 {
     public class Worker : BackgroundService
     {
+        private const string RedisServer = "localhost";
+        private const int RedisPort = 6379;
+        private const string RedisKey = "myItems";
+        private string connectionString = $"{RedisServer}:{RedisPort},allowAdmin=true";
+
         private readonly IWorkerRepository m_Repository;
         private readonly ILogger<Worker> m_Logger;
 
@@ -46,14 +53,33 @@ namespace WorkerApp
 
             var consumer = new EventingBasicConsumer(channel);
             var newItems = new List<CustomItem>();
-            consumer.Received += (_, e) =>
+            consumer.Received += async (_, e) =>
             {
                 var body = e.Body.ToArray();
                 var message = Encoding.UTF8.GetString(body);
                 Console.WriteLine(message);
 
-                var itemsFromRedis = Enumerable.Empty<CustomItem>(); //TODO
-                newItems.AddRange(itemsFromRedis);
+                var connection = await ConnectionMultiplexer.ConnectAsync(connectionString);
+                try
+                {
+                    var database = connection.GetDatabase();
+                    var itemsSerialized = await database.StringGetAsync(RedisKey);
+                    if (!itemsSerialized.IsNull)
+                    {
+                        var itemsDeserialized = JsonConvert.DeserializeObject<IEnumerable<CustomItem>>(itemsSerialized);
+                        newItems.AddRange(itemsDeserialized);
+                    }
+
+                    await database.KeyDeleteAsync(RedisKey); //Clear items from Redis
+                }
+                catch (Exception ex)
+                {
+                    m_Logger.LogError(ex, "Failed to read from Redis");
+                }
+                finally
+                {
+                    await connection.CloseAsync(true);
+                }                
             };
 
             await m_Repository.AddItems(newItems, cancellationToken);
