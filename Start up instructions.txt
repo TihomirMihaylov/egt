@@ -3,6 +3,8 @@ docker run -d --hostname my-rabbit --name ecomm-rabbit -p 15672:15672 -p 5672:56
 
 
 http://localhost:15672/ - management console
+username: guest
+password: guest
 
 
 2. Run Redis
@@ -10,14 +12,48 @@ docker pull redis
 docker run --name my-redis -d -p 6379:6379 redis
 
 
+3. Run MySql
+docker pull mysql:latest
+docker run --name mysql-container -e MYSQL_ROOT_PASSWORD=root -d mysql:latest
+
+
+4. Connect to local DB and execute SQL commands from DB script.sql
+
+5. Run WebApi
+
+6. Run WorkerApp
+
+7. Use Postman to send request to add items to Redis 
+
+POST https:\\localhost:7023\addItems
+
+ex.body
+{
+    "Items": [
+        {
+            "Id": 1,
+            "Name": "A"
+        },
+        {
+            "Id": 2,
+            "Name": "B"
+        }
+    ]
+}
+
+8. Use Postman to send request to notify consumers
+
+POST https:\\localhost:7023\itemsAdded
 
 
 
 
 
+Stop:
 
-
-
-stop:
 docker stop my-redis
 docker rm my-redis
+docker stop my-rabbit
+docker rm my-rabbit
+docker stop mysql-container
+docker rm mysql-container

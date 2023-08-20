@@ -6,6 +6,8 @@ namespace WorkerApp.Repository
     {
         public Task AddItems(IEnumerable<CustomItem> items, CancellationToken cancellationToken)
         {
+            //TODO: implement bulk insert
+
             return Task.CompletedTask;
         }
     }
