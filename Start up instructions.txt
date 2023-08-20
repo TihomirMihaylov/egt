@@ -1,0 +1,23 @@
+1. Run Rabbit MQ
+docker run -d --hostname my-rabbit --name ecomm-rabbit -p 15672:15672 -p 5672:5672 rabbitmq:3-management 
+
+
+http://localhost:15672/ - management console
+
+
+2. Run Redis
+docker pull redis
+docker run --name my-redis -d -p 6379:6379 redis
+
+
+
+
+
+
+
+
+
+
+stop:
+docker stop my-redis
+docker rm my-redis
