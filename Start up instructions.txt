@@ -53,7 +53,7 @@ Stop:
 
 docker stop my-redis
 docker rm my-redis
-docker stop my-rabbit
-docker rm my-rabbit
+docker stop ecomm-rabbit
+docker rm ecomm-rabbit
 docker stop mysql-container
 docker rm mysql-container
